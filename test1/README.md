@@ -160,4 +160,4 @@ Statistics
 ```
 我们看到，Cost=5,Rows=107,在在谓词信息中有一次索引搜索access，一次全表搜索filter,consitent gets=8。对比之下，查询语句1更优。
 下面运行sqldeverloper:
-[img](https://github.com/Frapschen/oracle/blob/master/test1/sqldeveloper_result.png).
+![img](https://github.com/Frapschen/oracle/blob/master/test1/sqldeveloper_result.png)
