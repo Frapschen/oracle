@@ -8,6 +8,7 @@ where d.department_id = e.department_id
 and d.department_name in ('IT'，'Sales')
 GROUP BY department_name;
 ```
+执行结果：
 ```
 EMPLOYEE_ID FIRST_NAME           MANAGER_ID MANAGER_NAME        
 ----------- -------------------- ---------- --------------------
@@ -76,7 +77,7 @@ Statistics
              125  table fetch by rowid
               27  user calls
 ```
-
+我们看到consistent gets为27，它不是最有效的语句。
               
 ### 执行查询语句2：
 ```
@@ -88,4 +89,6 @@ GROUP BY department_name
 HAVING d.department_name in ('IT'，'Sales');
 ```
 结果：
-![Image text](https://github.com/Frapschen/oracle/blob/master/test1/%E7%BB%93%E6%9E%9C2.png)
+```
+
+```
