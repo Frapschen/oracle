@@ -170,8 +170,25 @@ Statistics
               26  user calls
 
 ```
-我们看到，Cost=5,Rows=107,在在谓词信息中有一次索引搜索access，一次全表搜索filter,consitent gets=8。对比之下，查询语句1更优。
+我们看到，Cost=7,Rows=106,在在谓词信息中有一次索引搜索access，两次全表搜索filter,consitent gets=8。对比之下，查询语句1更优。
 下面运行sqldeverloper:
-![img](https://github.com/Frapschen/oracle/blob/master/test1/sqldeveloper_result.png)
-没有提供更加优化的sql.
+![img](https://github.com/Frapschen/oracle/blob/master/test1/sqldeveloper_result_before.png)
+我们看到sqldeverloper给出了优化指导，它让我们建立索引：
+```
+Recommendation (estimated benefit: 59.99%)
+  ------------------------------------------
+  - 考虑运行可以改进物理方案设计的访问指导或者创建推荐的索引。
+    create index HR.IDX$$_03390001 on HR.DEPARTMENTS("DEPARTMENT_NAME","DEPARTM
+    ENT_ID");
+
+  Rationale
+  ---------
+    创建推荐的索引可以显著地改进此语句的执行计划。但是, 使用典型的 SQL 工作量运行 "访问指导"
+    可能比单个语句更可取。通过这种方法可以获得全面的索引建议案, 包括计算索引维护的开销和附加的空间消耗。
+
+```
+建立索引，再次执行SQL语句1:
+```
+
+```
 
