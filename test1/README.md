@@ -255,7 +255,8 @@ Statistics
               26  user calls
 
 ```
-现在发现Cost=2,Rows=20,在谓词信息中有两次索引搜索access,,consistent gets=5.相比于没有建立索引前，性能得到了提升。
+现在发现Cost=2,Rows=20,在谓词信息中有两次索引搜索access,,consistent gets=5.相比于没有建立索引前，性能得到了提升。再次运行优化指导，发现没有优化建议了，如图：
+![img](https://github.com/Frapschen/oracle/blob/master/test1/sqldeveloper_result_after.png)
 ## 我自己构建的SQL语句
 
 
