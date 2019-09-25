@@ -1,4 +1,5 @@
-## 试验一
+# 试验一
+## 书上实验
 ### 执行查询语句1：
 ```
 SELECT d.department_name，count(e.job_id)as "部门总人数"，
@@ -189,6 +190,72 @@ Recommendation (estimated benefit: 59.99%)
 ```
 建立索引，再次执行SQL语句1:
 ```
+已启用自动跟踪
+显示执行计划以及语句的统计信息。
+
+DEPARTMENT_NAME                     部门总人数       平均工资
+------------------------------ ---------- ----------
+IT                                      5       5760
+Sales                                  34 8955.88235
+
+Explain Plan
+-----------------------------------------------------------
+
+PLAN_TABLE_OUTPUT                                                                                                                                                                                                                                                                                           
+
+Plan hash value: 3939821256
+ 
+---------------------------------------------------------------------------------------------------
+| Id  | Operation                     | Name              | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT              |                   |     2 |    46 |     2   (0)| 00:00:01 |
+|   1 |  SORT GROUP BY NOSORT         |                   |     2 |    46 |     2   (0)| 00:00:01 |
+|   2 |   NESTED LOOPS                |                   |    19 |   437 |     2   (0)| 00:00:01 |
+|   3 |    NESTED LOOPS               |                   |    20 |   437 |     2   (0)| 00:00:01 |
+|   4 |     INLIST ITERATOR           |                   |       |       |            |          |
+|*  5 |      INDEX RANGE SCAN         | INDEX1            |     2 |    32 |     1   (0)| 00:00:01 |
+
+PLAN_TABLE_OUTPUT                                                                                                                                                                                                                                                                                           
+|*  6 |     INDEX RANGE SCAN          | EMP_DEPARTMENT_IX |    10 |       |     0   (0)| 00:00:01 |
+|   7 |    TABLE ACCESS BY INDEX ROWID| EMPLOYEES         |    10 |    70 |     1   (0)| 00:00:01 |
+---------------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   5 - access("D"."DEPARTMENT_NAME"='IT' OR "D"."DEPARTMENT_NAME"='Sales')
+   6 - access("D"."DEPARTMENT_ID"="E"."DEPARTMENT_ID")
+
+Statistics
+-----------------------------------------------------------
+              26  Requests to/from client
+              25  SQL*Net roundtrips to/from client
+               6  buffer is not pinned count
+              76  buffer is pinned count
+             666  bytes received via SQL*Net from client
+           47227  bytes sent via SQL*Net to client
+               2  calls to get snapshot scn: kcmgss
+               2  calls to kcmgcs
+               5  consistent gets
+               5  consistent gets from cache
+               5  consistent gets pin
+               5  consistent gets pin (fastpath)
+               2  execute count
+               4  index scans kdiixs1
+           40960  logical read bytes from cache
+               3  no work - consistent read gets
+              25  non-idle wait count
+               2  opened cursors cumulative
+               1  opened cursors current
+               2  parse count (total)
+               5  session logical reads
+               1  sorts (memory)
+            1178  sorts (rows)
+              39  table fetch by rowid
+              26  user calls
 
 ```
+现在发现Cost=2,Rows=20,在谓词信息中有两次索引搜索access,,consistent gets=5.相比于没有建立索引前，性能得到了提升。
+## 我自己构建的SQL语句
+
 
