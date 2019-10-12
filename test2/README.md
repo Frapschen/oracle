@@ -90,13 +90,15 @@ wang
 ```
 * 第四步，授权SELECT给其他同学:
 ```
-执行 ：
+执行 ：GRANT SELECT ON myview TO jet5devil;
 结果 ：
-
+Grant 成功。
 ```
-
+* 第五步，查询同学给我的权限
 ```
-执行 ：
+执行 ：SELECT * FROM jet5devil.myview;
 结果 ：
-
+--------------------------------------------------
+zhang
+wang
 ```
