@@ -916,5 +916,172 @@ ORDER_DETAILS                                                                   
 
 已选择 5,000 行。
 ```
+## 执行查询语句
+* 查询某个员工的信息，脚本如下：
+```
+select * from employees
+```
+结果：
+```
+EMPLOYEE_ID NAME                                     EMAIL                                    PHONE_NUMBER                             HIRE_DATE     SALARY MANAGER_ID DEPARTMENT_ID PHOTO                                                                           
+----------- ---------------------------------------- ---------------------------------------- ---------------------------------------- --------- ---------- ---------- ------------- --------------------------------------------------------------------------------
+          1 李董事长                                                                                                                   01-1月 -10      50000                        1                                                                                 
+         11 张总                                                                                                                       01-1月 -10      50000          1             1                                                                                 
+        111 吴经理                                                                                                                     01-1月 -10      50000         11            11                                                                                 
+        112 白经理                                                                                                                     01-1月 -10      50000         11            11                                                                                 
+         12 王总                                                                                                                       01-1月 -10      50000          1             1                                                                                 
+        121 赵经理                                                                                                                     01-1月 -10      50000         12            12                                                                                 
+        122 刘经理                                                                                                                     01-1月 -10      50000         12            12                                                                                 
 
+已选择 7 行。
+```
+* 递归查询某个员工及其所有下属，子下属员工:
+```
+WITH A (EMPLOYEE_ID,NAME,EMAIL,PHONE_NUMBER,HIRE_DATE,SALARY,MANAGER_ID,DEPARTMENT_ID) AS
+  (SELECT EMPLOYEE_ID,NAME,EMAIL,PHONE_NUMBER,HIRE_DATE,SALARY,MANAGER_ID,DEPARTMENT_ID
+    FROM employees WHERE employee_ID = 11
+    UNION ALL
+  SELECT B.EMPLOYEE_ID,B.NAME,B.EMAIL,B.PHONE_NUMBER,B.HIRE_DATE,B.SALARY,B.MANAGER_ID,B.DEPARTMENT_ID
+    FROM A, employees B WHERE A.EMPLOYEE_ID = B.MANAGER_ID)
+SELECT * FROM A;
+```
+结果：
+```
+EMPLOYEE_ID NAME                                     EMAIL                                    PHONE_NUMBER                             HIRE_DATE     SALARY MANAGER_ID DEPARTMENT_ID PHOTO                                                                           
+----------- ---------------------------------------- ---------------------------------------- ---------------------------------------- --------- ---------- ---------- ------------- --------------------------------------------------------------------------------
+         11 张总                                                                                                                       01-1月 -10      50000          1             1                                                                                 
+        111 吴经理                                                                                                                     01-1月 -10      50000         11            11                                                                                 
+        112 白经理
+```
+* 查询订单表，并且包括订单的订单应收货款: Trade_Receivable= sum(订单详单表.ProductNum*订单详单表.ProductPrice)- Discount:
+```
+--计算由行触发器完成
+select order_id,trade_receivable from ORDERS
+```
+结果:
+```
+ORDER_ID TRADE_RECEIVABLE
+---------- ----------------
+      3768         26466.59
+      3770         17961.09
+      3772         29103.87
+      3774         22650.21
+      3776         20878.04
+      3778         15303.47
+      3780          25803.7
+      3782         29298.12
+      3784         19167.69
+      3786          26159.8
+      3788         14748.63
+            ·
+            ·
+            ·
+```
+* 查询订单详表，要求显示订单的客户名称和客户电话，产品类型用汉字描述:
+```
+select a.order_id as "订单编号",a.customer_name as "顾客名字",a.customer_tel as "联系电话",b.product_type as "产品类型"
+from ORDERS a,
+(select order_details.order_id,products.product_type from products,order_details 
+where products.product_name = order_details.product_name) b
+where a.order_id =b.order_id 
+```
+结果：
+```
+ 订单编号 顾客名字                                     联系电话                                     产品类型                                    
+---------- ---------------------------------------- ---------------------------------------- ----------------------------------------
+      2344 zhang2344                                1398888832344                            手机                                    
+      2346 zhang2346                                1398888832346                            电脑                                    
+      2346 zhang2346                                1398888832346                            耗材                                    
+      2346 zhang2346                                1398888832346                            手机                                    
+      2348 zhang2348                                1398888832348                            电脑                                    
+      2348 zhang2348                                1398888832348                            耗材                                    
+      2348 zhang2348                                1398888832348                            手机                                    
+      2350 zhang2350                                1398888832350                            电脑                                    
+      2350 zhang2350                                1398888832350                            耗材                                    
+      2350 zhang2350                                1398888832350                            手机                                    
+      2352 zhang2352                                1398888832352                            电脑
+                                                          ·
+                                                          ·
+                                                          ·
+```
+* 查询出所有空订单，即没有订单详单的订单,首先插入空订单信息:
+```
+ALTER TRIGGER "ORDERS_TRIG_ROW_LEVEL" DISABLE;
+declare
+  dt date;
+  m number(8,2);
+  V_EMPLOYEE_ID NUMBER(6);
+  v_order_id number(10);
+  v_name varchar2(100);
+  v_tel varchar2(100);
+  v number(10,2);
 
+begin
+  for i in 1000..1010
+  loop
+    if i mod 2 =0 then
+      dt:=to_date('2015-3-2','yyyy-mm-dd')+(i mod 60);
+    else
+      dt:=to_date('2016-3-2','yyyy-mm-dd')+(i mod 60);
+    end if;
+    V_EMPLOYEE_ID:=CASE I MOD 6 WHEN 0 THEN 11 WHEN 1 THEN 111 WHEN 2 THEN 112
+                                WHEN 3 THEN 12 WHEN 4 THEN 121 ELSE 122 END;
+    --插入订单
+    v_order_id:=SEQ_ORDER_ID.nextval; --应该将SEQ_ORDER_ID.nextval保存到变量中。
+    v_name := 'aa'|| 'aa';
+    v_name := '陈泯全的空订单' || i;
+    v_tel := '139888883' || i;
+    insert /*+append*/ into ORDERS (ORDER_ID,CUSTOMER_NAME,CUSTOMER_TEL,ORDER_DATE,EMPLOYEE_ID,DISCOUNT)
+      values (v_order_id,v_name,v_tel,dt,V_EMPLOYEE_ID,dbms_random.value(100,0));
+    
+  end loop;
+  --统计用户的所有表，所需时间很长：2千万行数据，需要1600秒，该语句可选
+  --dbms_stats.gather_schema_stats(User,estimate_percent=>100,cascade=> TRUE); --estimate_percent采样行的百分比
+end;
+```
+然后查询空订单：
+```
+select order_id,customer_name from orders where order_id not in (select order_id from order_details)
+```
+结果：
+```
+ORDER_ID CUSTOMER_NAME                           
+---------- ----------------------------------------
+     10007 陈泯全的空订单1006                      
+     10001 陈泯全的空订单1000                      
+     10011 陈泯全的空订单1010                      
+     10008 陈泯全的空订单1007                      
+     10004 陈泯全的空订单1003                      
+     10010 陈泯全的空订单1009                      
+     10009 陈泯全的空订单1008                      
+     10005 陈泯全的空订单1004                      
+     10003 陈泯全的空订单1002                      
+     10002 陈泯全的空订单1001                      
+     10006 陈泯全的空订单1005                      
+
+已选择 11 行。
+```
+* 查询部门表，同时显示部门的负责人姓名。
+```
+
+```
+结果
+```
+
+```
+* 查询部门表，统计每个部门的销售总金额:
+```
+select DEPARTMENT_NAME as "部门名字",总销售 from departments a,
+(select a.DEPARTMENT_ID,sum(b.sumNum) as "总销售" from employees a,
+(select EMPLOYEE_ID,sum(TRADE_RECEIVABLE) as sumNum  from orders group by EMPLOYEE_ID) b
+GROUP by DEPARTMENT_ID) b
+where a.DEPARTMENT_ID =b.DEPARTMENT_ID
+```
+结果：
+```
+部门名字                                            总销售
+---------------------------------------- ----------
+总经办                                    630681697
+销售部1                                   420454465
+销售部2                                   420454465
+```
