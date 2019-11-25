@@ -636,11 +636,6 @@ EOF
 exit
 ```
 
-结果：
-
-```text
-
-```
 
 ```text
 #rman_level1.sh 
@@ -672,12 +667,6 @@ release channel c1;
 EOF
 
 exit
-```
-
-结果：
-
-```text
-
 ```
 
 # 任务4：容灾,DataGuard
